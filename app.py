@@ -106,7 +106,7 @@ def check_texture_and_color(image):
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
     
     if len(faces) > 0:
-        return False, "⛔ TERDETEKSI WAJAH: Sistem hanya menerima foto daun padi, bukan foto orang."
+        return False, "⛔ OBJEK BUKAN DAUN PADI"
 
     # --- B. FILTER WARNA (DIPERKETAT: WAJIB ADA HIJAU) ---
     hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
