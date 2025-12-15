@@ -51,6 +51,46 @@ CLASS_NAMES = ['BrownSpot', 'Healthy', 'Hispa', 'LeafBlast']
 # ==========================================
 # 3. FILTER "GATEKEEPER" (VERSI ANTI-MANUSIA & ANTI-KAYU)
 # ==========================================
+def is_plant_object(image):
+    """
+    Filter awal: apakah ini objek tanaman (bukan lantai, tembok, meja, dll)
+    """
+    h, w = image.shape[:2]
+    total_pixels = h * w
+
+    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+
+    # Hijau (klorofil)
+    lower_green = np.array([30, 40, 40])
+    upper_green = np.array([90, 255, 255])
+
+    # Coklat (daun kering / penyakit)
+    lower_brown = np.array([10, 50, 40])
+    upper_brown = np.array([25, 255, 255])
+
+    mask_green = cv2.inRange(hsv, lower_green, upper_green)
+    mask_brown = cv2.inRange(hsv, lower_brown, upper_brown)
+
+    plant_pixels = np.count_nonzero(mask_green) + np.count_nonzero(mask_brown)
+    plant_ratio = (plant_pixels / total_pixels) * 100
+
+    # 👉 AMBANG KHUSUS TANAMAN
+    if plant_ratio < 5.0:
+        return False, f"⛔ BUKAN TANAMAN PADI: Area tanaman hanya {plant_ratio:.1f}%. Pastikan foto berisi daun padi."
+
+    return True, "OK"
+    
+def check_texture_and_color(image):
+    h, w = image.shape[:2]
+    total_pixels = h * w
+
+    # ==========================
+    # FILTER 0: OBJEK TANAMAN?
+    # ==========================
+    is_plant, msg = is_plant_object(image)
+    if not is_plant:
+        return False, msg
+
 def check_texture_and_color(image):
     h, w = image.shape[:2]
     total_pixels = h * w
