@@ -8,3 +8,4 @@ https://drive.google.com/file/d/1QIn5O6KCs6snkmWH3AbewPxcEEfYgYX-/view?usp=shari
 Setelah download, simpan file:
 best_model_efficientnet_focal.h5
 di folder project.
+Model diunduh otomatis dari Google Drive saat aplikasi dijalankan.
