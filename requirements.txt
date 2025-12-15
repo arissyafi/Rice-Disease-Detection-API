@@ -1,3 +1,6 @@
+pip>=23.0
+setuptools
+wheel
 gdown
 tensorflow
 Flask==3.0.0
