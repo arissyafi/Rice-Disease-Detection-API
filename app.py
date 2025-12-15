@@ -12,18 +12,14 @@ from werkzeug.utils import secure_filename
 from pyngrok import ngrok
 import gc
 
-# ==========================================
-# PERBAIKAN IMPORT: PAKE TF_KERAS LANGSUNG
-# ==========================================
-import tf_keras as keras
-from tf_keras.models import load_model
-from tf_keras.applications.efficientnet import preprocess_input
+from tensorflow.keras.models import load_model
+from tensorflow.keras.applications.efficientnet import preprocess_input
 
 # ==========================================
 # 1. KONFIGURASI
 # ==========================================
-# Masukkan Token Ngrok Anda
-NGROK_AUTH_TOKEN = "36rioVsfwi4eUJHyR87ObXPQ1qO_QoEA2WSvxT4wA8KA7j4t" 
+# ⚠️ PENTING: Ganti dengan Token Ngrok Anda!
+NGROK_AUTH_TOKEN = "36rlHkfujqgxeY9IrvrpRvWhXsF_fNeRCrfNueShWD46Tp6k" 
 ngrok.set_auth_token(NGROK_AUTH_TOKEN)
 
 app = Flask(__name__)
@@ -42,61 +38,68 @@ if not os.path.exists(MODEL_FILE):
     print("⬇️ Download Model...")
     gdown.download(URL, MODEL_FILE, quiet=False, fuzzy=True)
 
-print("⏳ Memuat Model...")
 try:
-    # KITA PAKSA PAKAI tf_keras AGAR BISA BACA TFOpLambda
-    model = keras.models.load_model(MODEL_FILE, compile=False)
-    print("✅ Model Siap (tf_keras Mode)!")
-except Exception as e:
-    print(f"❌ Gagal Load: {e}")
-    # Solusi Cadangan (Re-Download jika corrupt)
-    if os.path.exists(MODEL_FILE):
-        os.remove(MODEL_FILE)
-    print("Silakan restart app untuk download ulang model.")
+    model = load_model(MODEL_FILE, compile=False)
+    print("✅ Model Siap!")
+except:
+    import tf_keras
+    model = tf_keras.models.load_model(MODEL_FILE, compile=False)
+    print("✅ Model Siap (Legacy Mode)!")
 
 CLASS_NAMES = ['BrownSpot', 'Healthy', 'Hispa', 'LeafBlast']
 
 # ==========================================
-# 3. FILTER "GATEKEEPER"
+# 3. FILTER "GATEKEEPER" (VERSI ANTI-MANUSIA & ANTI-KAYU)
 # ==========================================
 def check_texture_and_color(image):
     h, w = image.shape[:2]
     total_pixels = h * w
     
-    # A. Deteksi Wajah
+    # --- A. FILTER WAJAH MANUSIA (BARU!) ---
+    # Menggunakan Haar Cascade bawaan OpenCV (Sangat ringan)
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    
+    # Load model wajah default OpenCV
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+    
+    # Deteksi wajah
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
     
     if len(faces) > 0:
-        return False, "⛔ TERDETEKSI WAJAH: Sistem hanya menerima foto daun padi."
+        return False, "⛔ TERDETEKSI WAJAH: Sistem hanya menerima foto daun padi, bukan foto orang."
 
-    # B. Cek Warna
+    # --- B. FILTER WARNA (DIPERKETAT: WAJIB ADA HIJAU) ---
     hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
     
-    # Hijau
+    # Definisi Warna
     lower_green = np.array([30, 40, 40])
     upper_green = np.array([90, 255, 255])
-    # Coklat
+    
+    # Coklat (Penyakit)
     lower_brown = np.array([10, 50, 40]) 
     upper_brown = np.array([25, 255, 255])
     
+    # Hitung Masking
     mask_green = cv2.inRange(hsv, lower_green, upper_green)
     mask_brown = cv2.inRange(hsv, lower_brown, upper_brown)
     
+    # Hitung Piksel
     green_pixels = np.count_nonzero(mask_green)
     brown_pixels = np.count_nonzero(mask_brown)
     
     green_ratio = (green_pixels / total_pixels) * 100
     total_plant_ratio = ((green_pixels + brown_pixels) / total_pixels) * 100
     
+    # --- LOGIKA BARU ---
+    # 1. Wajib ada unsur Hijau minimal 2% (Untuk memastikan itu tanaman hidup, bukan meja kayu)
     if green_ratio < 2.0:
-         return False, f"⛔ TIDAK ADA KLOROFIL: Unsur hijau hanya {green_ratio:.2f}%. Pastikan objek adalah tanaman hidup."
+         return False, f"⛔ TIDAK ADA KLOROFIL: Unsur hijau hanya {green_ratio:.2f}%. Meja kayu/tanah/benda mati akan ditolak. Pastikan ada daun hijau terlihat."
 
+    # 2. Total area daun+penyakit harus dominan (> 20%)
     if total_plant_ratio < 20.0:
-        return False, f"⛔ BUKAN PADI: Objek tanaman terlalu kecil ({total_plant_ratio:.1f}%)."
+        return False, f"⛔ BUKAN PADI: Objek tanaman terlalu kecil ({total_plant_ratio:.1f}%). Harap foto lebih dekat."
 
-    # C. Cek Tekstur
+    # --- C. FILTER TEKSTUR ---
     texture_score = cv2.Laplacian(gray, cv2.CV_64F).var()
     if texture_score < 40:
         return False, "⛔ TEKSTUR HALUS: Objek terlalu polos/blur."
@@ -104,7 +107,7 @@ def check_texture_and_color(image):
     return True, "OK"
 
 # ==========================================
-# 4. PREPROCESSING
+# 4. PREPROCESSING LANJUTAN
 # ==========================================
 def crop_center_square(image):
     h, w = image.shape[:2]
@@ -118,6 +121,7 @@ def prepare_pipeline(path):
     if img is None: return None, "File rusak"
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     
+    # VALIDASI (Panggil fungsi baru)
     valid, msg = check_texture_and_color(img) 
     if not valid:
         return None, msg
@@ -125,8 +129,8 @@ def prepare_pipeline(path):
     img = crop_center_square(img)
     img_resized = cv2.resize(img, (224, 224))
     
+    # TTA
     batch_images = [img_resized, cv2.flip(img_resized, 1)]
-    # Pakai preprocess_input milik tf_keras
     batch_x = preprocess_input(np.array(batch_images))
     
     return batch_x, "OK"
@@ -169,13 +173,14 @@ def predict():
             confidence = float(calibrated_pred[idx]) * 100
             result_class = CLASS_NAMES[idx]
             
+            # RULE GAP (Untuk mencegah salah tebak pada benda mirip daun)
             sorted_indices = np.argsort(final_pred)[::-1]
             gap = final_pred[sorted_indices[0]] - final_pred[sorted_indices[1]]
             
             if confidence < 45.0 or gap < 0.10:
                 os.remove(filepath)
                 return jsonify({
-                    'error': f"⛔ OBJEK MERAGUKAN: AI Bingung (Gap: {gap:.2f})."
+                    'error': f"⛔ OBJEK MERAGUKAN: AI Bingung (Gap: {gap:.2f}). Pastikan foto daun jelas."
                 })
 
             status = "high" if confidence > 70 else "low"
@@ -196,7 +201,9 @@ if __name__ == '__main__':
     ngrok.kill()
     try:
         public_url = ngrok.connect(5000).public_url
-        print(f"\n🚀 LINK WEB: {public_url}\n")
+        print("\n" + "="*50)
+        print(f"🚀 LINK WEB: {public_url}")
+        print("="*50 + "\n")
         app.run(port=5000)
     except Exception as e:
         print(f"Error: {e}")
