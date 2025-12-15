@@ -3,177 +3,212 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rice Disease Expert System</title>
+    <title>RiceGuard AI</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary-green: #2ecc71;
-            --dark-green: #27ae60;
-            --bg-color: #f0f2f5;
+            --primary: #27ae60;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --bg: #f8f9fa;
         }
 
         body {
-            background-color: var(--bg-color);
-            font-family: 'Inter', sans-serif;
-            color: #333;
+            background-color: var(--bg);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--dark);
+            -webkit-font-smoothing: antialiased;
         }
 
+        /* Mobile Container Simulation */
         .app-container {
-            max-width: 480px; 
+            max-width: 480px;
             margin: 0 auto;
             min-height: 100vh;
             background: white;
-            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            box-shadow: 0 0 40px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
             position: relative;
         }
 
-        /* Header Modern */
+        /* Hero Header */
         .header {
-            background: var(--dark-green);
+            background: linear-gradient(135deg, var(--primary), #1e8449);
             color: white;
-            padding: 25px 20px 40px 20px; /* Padding bawah lebih besar untuk curve */
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            text-align: center;
+            padding: 40px 25px 50px 25px;
+            border-bottom-left-radius: 35px;
+            border-bottom-right-radius: 35px;
             position: relative;
             z-index: 1;
         }
+        
+        .header h1 { font-weight: 800; font-size: 1.5rem; margin-bottom: 5px; letter-spacing: -0.5px; }
+        .header p { opacity: 0.9; font-size: 0.9rem; font-weight: 400; }
 
-        .header h4 { font-weight: 700; margin-bottom: 5px; font-size: 1.2rem; }
-        .header small { opacity: 0.9; font-weight: 300; font-size: 0.85rem; }
-
+        /* Content Area */
         .content {
             flex: 1;
-            padding: 20px;
-            margin-top: -30px; /* Pull content up */
+            padding: 0 25px;
+            margin-top: -40px;
             z-index: 2;
+            padding-bottom: 40px;
         }
 
-        /* Image Preview Box */
-        .preview-box {
+        /* Image Preview Area */
+        .scan-card {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            border-radius: 25px;
             padding: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
             text-align: center;
-            min-height: 250px;
+            min-height: 280px;
             display: flex;
-            align-items: center;
-            justify-content: center;
             flex-direction: column;
-            border: 2px solid #f0f0f0;
+            justify-content: center;
+            align-items: center;
+            border: 2px dashed #e0e0e0;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
         }
 
-        #imageDisplay {
+        .scan-card.has-image {
+            border: none;
+            padding: 0;
+            background: black;
+        }
+
+        #imagePreview {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 15px;
+            border-radius: 25px;
             display: none;
         }
 
-        .placeholder-icon {
-            font-size: 4rem;
-            color: #e2e8f0;
-            margin-bottom: 10px;
-        }
+        .placeholder-content i { font-size: 3.5rem; color: #cbd5e0; margin-bottom: 15px; }
+        .placeholder-content p { color: #95a5a6; font-size: 0.9rem; margin: 0; }
 
-        /* Tombol Aksi */
-        .action-buttons {
-            display: flex;
+        /* Action Buttons */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-top: 25px;
         }
 
-        .btn-action {
-            flex: 1;
-            padding: 15px;
-            border-radius: 15px;
+        .btn-custom {
             border: none;
-            font-weight: 600;
+            padding: 15px;
+            border-radius: 18px;
+            font-weight: 700;
             font-size: 0.9rem;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
             transition: transform 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        .btn-action:active { transform: scale(0.95); }
-
-        .btn-camera {
-            background-color: #e8f5e9;
-            color: var(--dark-green);
-            border: 2px solid var(--dark-green);
-        }
-
-        .btn-gallery {
-            background-color: #fff;
-            color: #555;
-            border: 2px solid #e2e8f0;
-        }
-
-        .btn-analyze {
-            background: linear-gradient(135deg, var(--dark-green), var(--primary-green));
-            color: white;
-            border: none;
-            border-radius: 15px;
-            padding: 18px;
-            font-weight: 700;
-            width: 100%;
-            margin-top: 20px;
-            font-size: 1rem;
-            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
-            display: none; /* Hidden until image selected */
-        }
-
-        /* Result Card */
-        .result-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-top: 20px;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%) translateY(100%);
-            width: 100%;
-            max-width: 480px;
-            transition: transform 0.3s ease-out;
-            z-index: 100;
-        }
-
-        .result-card.show { transform: translateX(-50%) translateY(0); }
-
-        .confidence-pill {
-            background: #f0fdf4;
-            color: var(--dark-green);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: inline-block;
-            margin-top: 5px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         
-        /* Overlay Gelap saat hasil muncul */
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 90;
-            display: none;
+        .btn-custom:active { transform: scale(0.96); }
+        .btn-camera { background: #e8f5e9; color: var(--primary); }
+        .btn-gallery { background: white; color: var(--dark); border: 1px solid #edf2f7; }
+
+        .btn-analyze {
+            width: 100%;
+            background: var(--dark);
+            color: white;
+            margin-top: 20px;
+            padding: 18px;
+            box-shadow: 0 10px 20px rgba(44, 62, 80, 0.3);
         }
 
+        /* Result Section */
+        .result-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: end; /* Slide from bottom */
+        }
+
+        .result-content {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            padding: 30px 25px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .result-modal.active .result-content { transform: translateY(0); }
+
+        .disease-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .bg-healthy { background: #d1fae5; color: #059669; }
+        .bg-danger-soft { background: #fee2e2; color: #dc2626; }
+
+        .confidence-bar {
+            height: 6px;
+            background: #edf2f7;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 1s ease;
+        }
+
+        /* Info Cards */
+        .info-card {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .info-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .info-text { font-size: 0.9rem; line-height: 1.6; color: #555; margin: 0; }
+        .info-list { margin: 0; padding-left: 20px; font-size: 0.9rem; color: #555; }
+        .info-list li { margin-bottom: 5px; }
+
+        /* Loading */
+        .loading-overlay {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(255,255,255,0.9);
+            display: none;
+            justify-content: center; align-items: center; flex-direction: column;
+            z-index: 10;
+            border-radius: 25px;
+        }
     </style>
 </head>
 <body>
@@ -181,173 +216,238 @@
 <div class="app-container">
     
     <div class="header">
-        <h4>Rice Doctor AI</h4>
-        <small>Deteksi Penyakit Padi <br> (EfficientNet + Adaptive Seg)</small>
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1>RiceGuard AI</h1>
+                <p class="mb-0">Sistem Deteksi Penyakit Padi</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 12px;">
+                <i class="bi bi-flower1 fs-4"></i>
+            </div>
+        </div>
     </div>
 
     <div class="content">
         
-        <div class="preview-box">
-            <div id="placeholderState">
-                <i class="bi bi-image placeholder-icon"></i>
-                <p class="text-muted small mb-0">Belum ada foto dipilih</p>
+        <div class="scan-card" id="scanCard">
+            <div class="loading-overlay" id="loadingState">
+                <div class="spinner-border text-success mb-3" role="status"></div>
+                <small class="fw-bold text-muted">Menganalisa Citra...</small>
             </div>
-            <img id="imageDisplay" src="" alt="Preview">
+
+            <div class="placeholder-content" id="placeholder">
+                <i class="bi bi-camera"></i>
+                <p>Upload foto daun padi yang<br>ingin Anda diagnosa</p>
+            </div>
+            <img id="imagePreview" src="" alt="Preview">
         </div>
 
-        <div class="action-buttons">
-            <button class="btn-action btn-camera" onclick="triggerCamera()">
-                <i class="bi bi-camera-fill fs-4"></i>
-                Ambil Foto
+        <div class="action-grid">
+            <button class="btn-custom btn-camera" onclick="document.getElementById('cameraInput').click()">
+                <i class="bi bi-camera-fill"></i> Kamera
             </button>
-            
-            <button class="btn-action btn-gallery" onclick="triggerGallery()">
-                <i class="bi bi-images fs-4"></i>
-                Galeri
+            <button class="btn-custom btn-gallery" onclick="document.getElementById('galleryInput').click()">
+                <i class="bi bi-image"></i> Galeri
             </button>
         </div>
 
-        <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden>
-        
-        <input type="file" id="galleryInput" accept="image/*" hidden>
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" hidden onchange="handleFile(this)">
+        <input type="file" id="galleryInput" accept="image/*" hidden onchange="handleFile(this)">
 
-        <button id="analyzeBtn" class="btn-analyze">
-            🔍 Analisis Sekarang
+        <button class="btn-custom btn-analyze" id="analyzeBtn" onclick="analyzeImage()" style="display: none;">
+            🔍 Diagnosa Sekarang
         </button>
 
     </div>
 
-    <div id="loading" class="position-fixed top-50 start-50 translate-middle text-center" style="display: none; z-index: 110;">
-        <div class="spinner-border text-success" style="width: 3rem; height: 3rem;" role="status"></div>
-        <p class="mt-2 text-white fw-bold" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">Memproses Citra...</p>
-    </div>
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted small fw-bold">HASIL ANALISA</span>
+                <button class="btn-close" onclick="closeResult()"></button>
+            </div>
 
-    <div id="overlay" class="overlay" onclick="closeResult()"></div>
+            <span id="badgeClass" class="disease-badge bg-danger-soft">-</span>
+            <h2 id="resultTitle" class="fw-bold mb-1" style="color: var(--dark)">-</h2>
+            
+            <div class="d-flex justify-content-between align-items-end mt-2">
+                <small class="text-muted">Tingkat Keyakinan</small>
+                <span id="confScore" class="fw-bold text-success">0%</span>
+            </div>
+            <div class="confidence-bar">
+                <div id="confFill" class="confidence-fill"></div>
+            </div>
 
-    <div id="resultCard" class="result-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="text-muted mb-0">HASIL DIAGNOSA</h6>
-            <button class="btn-close" onclick="closeResult()"></button>
-        </div>
-        
-        <h2 id="resultClass" class="fw-bold mb-1">-</h2>
-        <div class="confidence-pill">Akurasi: <span id="resultConf">0%</span></div>
+            <div id="infoSection">
+                </div>
 
-        <hr class="my-3">
-        
-        <div class="alert alert-light border small mb-0">
-            <i class="bi bi-info-circle-fill text-primary"></i>
-            Model menggunakan segmentasi otomatis. Pastikan foto fokus pada daun.
+            <button class="btn btn-outline-secondary w-100 mt-4 py-3 rounded-4 fw-bold" onclick="closeResult()">
+                Selesai / Scan Lagi
+            </button>
         </div>
     </div>
 
 </div>
 
 <script>
-    // Elements
-    const cameraInput = document.getElementById('cameraInput');
-    const galleryInput = document.getElementById('galleryInput');
-    const imageDisplay = document.getElementById('imageDisplay');
-    const placeholderState = document.getElementById('placeholderState');
-    const analyzeBtn = document.getElementById('analyzeBtn');
-    const loading = document.getElementById('loading');
-    const resultCard = document.getElementById('resultCard');
-    const overlay = document.getElementById('overlay');
-    const resultClass = document.getElementById('resultClass');
-    const resultConf = document.getElementById('resultConf');
+    // --- DATABASE PENYAKIT (Knowledge Base) ---
+    // Pastikan Key ('BrownSpot') sama persis dengan output Model Python
+    const DISEASE_DB = {
+        'BrownSpot': {
+            title: 'Brown Spot (Bercak Coklat)',
+            desc: 'Penyakit jamur yang menyebabkan bercak coklat oval pada daun. Sering terjadi pada tanah yang kekurangan nutrisi.',
+            treatment: [
+                'Gunakan fungisida berbahan aktif Iprodione atau Propiconazole.',
+                'Berikan pupuk Kalium (K) dan Silika untuk memperkuat daun.',
+                'Lakukan perawatan benih (seed treatment) sebelum tanam.',
+                'Jaga kebersihan gulma di sekitar sawah.'
+            ]
+        },
+        'LeafBlast': {
+            title: 'Leaf Blast (Blas Daun)',
+            desc: 'Penyakit mematikan yang disebabkan jamur Pyricularia oryzae. Menandai daun dengan bercak berbentuk belah ketupat.',
+            treatment: [
+                'Segera semprot fungisida (Tricyclazole atau Isoprothiolane).',
+                'Hindari penggunaan pupuk Urea (Nitrogen) berlebihan.',
+                'Jaga genangan air di sawah (jangan biarkan tanah kering retak).',
+                'Musnahkan jerami sisa tanaman yang terinfeksi.'
+            ]
+        },
+        'Hispa': {
+            title: 'Rice Hispa (Hama Putih)',
+            desc: 'Serangan kumbang kecil yang menggerogoti hijau daun, menyisakan garis-garis putih transparan pada daun.',
+            treatment: [
+                'Pangkas ujung daun yang bertelur jika serangan masih sedikit.',
+                'Semprot insektisida sistemik (seperti Chlorpyrifos) jika parah.',
+                'Gunakan jaring serangga untuk menangkap kumbang dewasa.',
+                'Bersihkan rumput liar di sekitar pematang.'
+            ]
+        },
+        'Healthy': {
+            title: 'Tanaman Sehat',
+            desc: 'Tidak ditemukan tanda-tanda penyakit pada daun ini. Tanaman tumbuh dengan optimal.',
+            treatment: [
+                'Pertahankan pemberian air dan pupuk yang seimbang.',
+                'Lakukan pemantauan rutin setiap minggu.',
+                'Jaga jarak tanam agar sirkulasi udara baik.'
+            ]
+        }
+    };
 
     let selectedFile = null;
 
-    // 1. Fungsi Trigger Tombol
-    function triggerCamera() {
-        cameraInput.click();
-    }
-
-    function triggerGallery() {
-        galleryInput.click();
-    }
-
-    // 2. Handle File Selection (Camera)
-    cameraInput.addEventListener('change', (e) => handleFileSelect(e));
-
-    // 3. Handle File Selection (Gallery)
-    galleryInput.addEventListener('change', (e) => handleFileSelect(e));
-
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (file) {
-            selectedFile = file;
+    function handleFile(input) {
+        if(input.files && input.files[0]) {
+            selectedFile = input.files[0];
             const reader = new FileReader();
-            reader.onload = function(e) {
-                imageDisplay.src = e.target.result;
-                imageDisplay.style.display = 'block';
-                placeholderState.style.display = 'none';
-                analyzeBtn.style.display = 'block'; // Tampilkan tombol analisa
+            
+            reader.onload = (e) => {
+                document.getElementById('imagePreview').src = e.target.result;
+                document.getElementById('imagePreview').style.display = 'block';
+                document.getElementById('placeholder').style.display = 'none';
+                document.getElementById('scanCard').classList.add('has-image');
+                document.getElementById('analyzeBtn').style.display = 'block';
                 
-                // Animasi scroll halus ke tombol
-                analyzeBtn.scrollIntoView({ behavior: 'smooth' });
+                // Scroll smooth ke tombol
+                document.getElementById('analyzeBtn').scrollIntoView({behavior: 'smooth'});
             }
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(selectedFile);
         }
     }
 
-    // 4. Proses Analisa (AJAX)
-    analyzeBtn.addEventListener('click', async () => {
-        if (!selectedFile) return;
+    async function analyzeImage() {
+        if(!selectedFile) return;
 
-        // UI States
-        loading.style.display = 'block';
-        overlay.style.display = 'block'; // Gelapkan background
-
+        // UI Loading State
+        document.getElementById('loadingState').style.display = 'flex';
+        
         const formData = new FormData();
         formData.append('file', selectedFile);
 
         try {
-            const response = await fetch('/predict', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
+            const req = await fetch('/predict', { method: 'POST', body: formData });
+            const res = await req.json();
 
-            loading.style.display = 'none';
+            document.getElementById('loadingState').style.display = 'none';
 
-            if (data.error) {
-                alert("Error: " + data.error);
-                overlay.style.display = 'none';
+            if(res.error) {
+                alert("Error: " + res.error);
             } else {
-                showResult(data);
+                showResult(res.class, res.confidence);
             }
-
-        } catch (error) {
-            console.error(error);
-            loading.style.display = 'none';
-            overlay.style.display = 'none';
-            alert("Gagal terhubung ke server.");
+        } catch(e) {
+            document.getElementById('loadingState').style.display = 'none';
+            alert("Gagal koneksi ke server.");
         }
-    });
-
-    // 5. Tampilkan Hasil
-    function showResult(data) {
-        resultClass.innerText = data.class;
-        resultConf.innerText = data.confidence;
-
-        // Warna teks sesuai kelas
-        if (data.class === 'Healthy') {
-            resultClass.style.color = '#27ae60';
-        } else {
-            resultClass.style.color = '#e74c3c';
-        }
-
-        // Slide up card
-        resultCard.classList.add('show');
     }
 
-    // 6. Tutup Hasil
+    function showResult(className, confidence) {
+        const modal = document.getElementById('resultModal');
+        const data = DISEASE_DB[className] || { 
+            title: className, 
+            desc: 'Tidak ada informasi detail untuk kelas ini.', 
+            treatment: [] 
+        };
+
+        // 1. Isi Data Utama
+        document.getElementById('resultTitle').innerText = data.title;
+        document.getElementById('confScore').innerText = confidence;
+        
+        // 2. Animasi Bar
+        const confVal = parseFloat(confidence);
+        setTimeout(() => {
+            document.getElementById('confFill').style.width = confVal + '%';
+        }, 100);
+
+        // 3. Atur Warna & Badge
+        const badge = document.getElementById('badgeClass');
+        if(className === 'Healthy') {
+            badge.className = 'disease-badge bg-healthy';
+            badge.innerText = 'SEHAT / AMAN';
+            document.getElementById('confFill').style.backgroundColor = '#2ecc71';
+        } else {
+            badge.className = 'disease-badge bg-danger-soft';
+            badge.innerText = 'TERDETEKSI PENYAKIT';
+            document.getElementById('confFill').style.backgroundColor = '#e74c3c';
+        }
+
+        // 4. Generate Info & Treatment (HTML Injection)
+        let infoHTML = `
+            <div class="info-card">
+                <div class="info-title text-primary">
+                    <i class="bi bi-info-circle-fill"></i> Mengenai Penyakit
+                </div>
+                <p class="info-text">${data.desc}</p>
+            </div>
+        `;
+
+        if(data.treatment.length > 0) {
+            let listHTML = data.treatment.map(item => `<li>${item}</li>`).join('');
+            infoHTML += `
+                <div class="info-card" style="border-left-color: #f39c12;">
+                    <div class="info-title" style="color: #d35400;">
+                        <i class="bi bi-bandaid-fill"></i> Rekomendasi Penanganan
+                    </div>
+                    <ul class="info-list">
+                        ${listHTML}
+                    </ul>
+                </div>
+            `;
+        }
+
+        document.getElementById('infoSection').innerHTML = infoHTML;
+
+        // 5. Tampilkan Modal
+        modal.style.display = 'flex';
+        setTimeout(() => { modal.classList.add('active'); }, 10);
+    }
+
     function closeResult() {
-        resultCard.classList.remove('show');
-        overlay.style.display = 'none';
+        const modal = document.getElementById('resultModal');
+        modal.classList.remove('active');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
     }
 </script>
 
 </body>
-          </html>
+</html>
